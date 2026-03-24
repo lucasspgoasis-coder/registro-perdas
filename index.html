@@ -8,8 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
@@ -22,7 +21,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
+            background-color: #f1f5f9;
             color: #1e293b;
             margin: 0;
         }
@@ -44,37 +43,16 @@
             justify-content: space-between;
         }
 
-        .logo-box {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
         .logo-img {
-            height: 50px;
+            height: 45px;
             width: auto;
-        }
-
-        .header-titles h1 {
-            color: white;
-            font-weight: 900;
-            font-size: 1.2rem;
-            margin: 0;
-            text-transform: uppercase;
-        }
-
-        .header-titles p {
-            color: var(--accent);
-            font-size: 0.7rem;
-            font-weight: 700;
-            margin: 0;
         }
 
         .card {
             background: white;
-            border-radius: 16px;
+            border-radius: 20px;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         .input-group label {
@@ -103,60 +81,54 @@
         .custom-field {
             width: 100%;
             padding: 10px 10px 10px 40px;
-            border-radius: 10px;
-            border: 1.5px solid #e2e8f0;
-            background: #fdfdfd;
+            border-radius: 12px;
+            border: 2px solid #f1f5f9;
+            background: #f8fafc;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             transition: all 0.2s;
         }
 
         .custom-field:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            background: white;
         }
 
-        .btn-main {
-            background: var(--primary-dark);
-            color: white;
+        .btn-action {
             font-weight: 800;
             text-transform: uppercase;
-            font-size: 12px;
-            padding: 14px;
+            font-size: 11px;
+            padding: 12px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             transition: all 0.2s;
         }
 
-        .btn-main:hover {
-            background: var(--primary-light);
-            transform: translateY(-1px);
+        /* Flash Card Styles */
+        .flash-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            border-left: 6px solid #cbd5e1;
+            transition: transform 0.2s;
         }
+        .flash-card:hover { transform: scale(1.02); }
+        .card-red { border-left-color: #ef4444; }
+        .card-green { border-left-color: #10b981; }
 
-        .chart-container {
-            height: 250px;
-            width: 100%;
-        }
-
-        .section-divider {
-            border-top: 1px dashed #e2e8f0;
-            margin: 15px 0;
-            padding-top: 10px;
-        }
-
-        .badge-semana {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 4px 12px;
-            border-radius: 20px;
+        .badge-info {
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 700;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            min-width: 80px;
+            gap: 5px;
         }
     </style>
 </head>
@@ -164,39 +136,37 @@
 
     <header class="sticky-header">
         <div class="header-content">
-            <div class="logo-box">
+            <div class="flex items-center gap-4">
                 <img src="https://i.imgur.com/LUfXx4e.png" alt="Oasis Logo" class="logo-img">
-                <div class="header-titles">
-                    <h1>Gestão de Perdas</h1>
-                    <p>SPG OÁSIS • UNIDADE DE PRODUÇÃO</p>
+                <div class="hidden sm:block">
+                    <h1 class="text-white font-black text-lg leading-tight uppercase">Gestão de Produção</h1>
+                    <p class="text-emerald-400 font-bold text-[10px]">SPG OÁSIS • UNIDADE DE CAMPO</p>
                 </div>
             </div>
-            <div class="flex gap-3 text-white">
-                <div class="badge-semana">
-                    <span class="text-[8px] font-bold opacity-70 uppercase">Data</span>
-                    <span id="displayDate" class="text-xs font-black">--/--/----</span>
+            <div class="flex gap-2">
+                <div class="bg-white/10 px-3 py-1 rounded-xl text-center">
+                    <p class="text-[8px] text-white/60 font-black uppercase">Data</p>
+                    <p id="displayDate" class="text-white text-xs font-black">--/--/----</p>
                 </div>
-                <div class="badge-semana">
-                    <span class="text-[8px] font-bold opacity-70 uppercase">Semana</span>
-                    <span id="displayWeek" class="text-xs font-black">--</span>
+                <div class="bg-white/10 px-3 py-1 rounded-xl text-center">
+                    <p class="text-[8px] text-white/60 font-black uppercase">Semana</p>
+                    <p id="displayWeek" class="text-white text-xs font-black">--</p>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="max-w-[1440px] mx-auto px-6 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <main id="capture-area" class="max-w-[1440px] mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             <!-- Formulário -->
-            <aside class="lg:col-span-4">
-                <div class="card p-6">
-                    <h3 class="text-sm font-black text-slate-800 uppercase mb-6">
-                        <i class="fas fa-clipboard-list text-emerald-500 mr-2"></i> Lançamento Campo
+            <aside class="lg:col-span-4 no-export">
+                <div class="card p-5">
+                    <h3 class="text-xs font-black text-slate-800 uppercase mb-5 flex items-center gap-2">
+                        <i class="fas fa-edit text-emerald-500"></i> Registro de Atividade
                     </h3>
                     
                     <form id="perdaForm" class="space-y-4">
-                        <input type="hidden" id="editId">
-                        
                         <div class="grid grid-cols-2 gap-3">
                             <div class="input-group">
                                 <label>Data</label>
@@ -208,11 +178,14 @@
                             <div class="input-group">
                                 <label>Bloco</label>
                                 <div class="field-container">
-                                    <i class="fas fa-th"></i>
+                                    <i class="fas fa-map-location-dot"></i>
                                     <select id="bloco" class="custom-field" required>
-                                        <option value="">Bloco...</option>
+                                        <option value="">Selecionar...</option>
                                         <script>
-                                            for(let i=1; i<=15; i++) document.write(`<option value="Bloco ${String(i).padStart(2, '0')}">Bloco ${String(i).padStart(2, '0')}</option>`);
+                                            for(let i=1; i<=15; i++) {
+                                                let b = `Bloco ${String(i).padStart(2, '0')}`;
+                                                document.write(`<option value="${b}">${b}</option>`);
+                                            }
                                         </script>
                                     </select>
                                 </div>
@@ -223,7 +196,7 @@
                             <div class="input-group">
                                 <label>Cultura</label>
                                 <div class="field-container">
-                                    <i class="fas fa-seedling"></i>
+                                    <i class="fas fa-leaf"></i>
                                     <select id="cultura" class="custom-field" required>
                                         <option value="Brocólis">Brocólis</option>
                                         <option value="Couve-flor">Couve-flor</option>
@@ -235,105 +208,78 @@
                             <div class="input-group">
                                 <label>Variedade</label>
                                 <div class="field-container">
-                                    <i class="fas fa-tag"></i>
+                                    <i class="fas fa-fingerprint"></i>
                                     <input type="text" id="variedade" class="custom-field" placeholder="Ex: Master">
                                 </div>
                             </div>
                         </div>
 
-                        <div class="section-divider">
-                            <h4 class="text-[9px] font-black text-emerald-600 uppercase mb-3">Mortalidade e Causas</h4>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="input-group">
-                                <label>Qtd. Plantada</label>
-                                <div class="field-container">
-                                    <i class="fas fa-plus"></i>
+                        <div class="bg-red-50 p-3 rounded-xl space-y-3">
+                            <p class="text-[9px] font-black text-red-600 uppercase">Perdas e Causas</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="input-group">
+                                    <label>Qtd. Plantada</label>
                                     <input type="number" id="transplantado" class="custom-field" required placeholder="0">
                                 </div>
-                            </div>
-                            <div class="input-group">
-                                <label>Qtd. Mortas</label>
-                                <div class="field-container">
-                                    <i class="fas fa-minus"></i>
+                                <div class="input-group">
+                                    <label>Qtd. Mortas</label>
                                     <input type="number" id="perdas" class="custom-field" required placeholder="0">
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label>Causa da Perda</label>
-                            <div class="field-container">
-                                <i class="fas fa-triangle-exclamation"></i>
+                            <div class="input-group">
+                                <label>Principal Causa</label>
                                 <select id="causaPerda" class="custom-field" required>
-                                    <option value="">Selecione a causa...</option>
+                                    <option value="">Selecionar causa...</option>
                                     <option value="Pragas">Pragas</option>
                                     <option value="Doenças">Doenças</option>
                                     <option value="Stress Hídrico">Stress Hídrico</option>
                                     <option value="Qualidade Muda">Qualidade da Muda</option>
-                                    <option value="Mecânico">Dano Mecânico</option>
+                                    <option value="Dano Mecânico">Dano Mecânico</option>
                                     <option value="Outros">Outros</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div class="section-divider">
-                            <h4 class="text-[9px] font-black text-blue-600 uppercase mb-3">Produção Colhida</h4>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="input-group">
-                                <label>Total KG</label>
-                                <div class="field-container">
-                                    <i class="fas fa-weight-hanging"></i>
-                                    <input type="number" step="0.1" id="totalKg" class="custom-field" placeholder="0.0">
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label>Total Caixas</label>
-                                <div class="field-container">
-                                    <i class="fas fa-box"></i>
-                                    <input type="number" id="totalCaixas" class="custom-field" placeholder="0">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="section-divider">
-                            <h4 class="text-[9px] font-black text-orange-600 uppercase mb-3">Irrigação</h4>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-3">
-                            <div class="input-group">
-                                <label>Tipo de Emissor</label>
-                                <div class="field-container">
-                                    <i class="fas fa-faucet-drip"></i>
-                                    <select id="tipoIrrigacao" class="custom-field" onchange="calcVazao()">
-                                        <option value="90">Microaspersor (90 Ltrs/h)</option>
-                                        <option value="520">Aspersor (520 Ltrs/h)</option>
-                                    </select>
-                                </div>
-                            </div>
+                        <div class="bg-blue-50 p-3 rounded-xl space-y-3">
+                            <p class="text-[9px] font-black text-blue-600 uppercase">Produção Realizada</p>
                             <div class="grid grid-cols-2 gap-3">
                                 <div class="input-group">
-                                    <label>Qtd. Emissores</label>
-                                    <div class="field-container">
-                                        <i class="fas fa-hashtag"></i>
-                                        <input type="number" id="qtdEmissores" class="custom-field" placeholder="0" oninput="calcVazao()">
-                                    </div>
+                                    <label>Peso Total (KG)</label>
+                                    <input type="number" step="0.1" id="totalKg" class="custom-field" placeholder="0.0" oninput="calcMedia()">
                                 </div>
                                 <div class="input-group">
-                                    <label>Vazão Bloco</label>
-                                    <div class="field-container">
-                                        <i class="fas fa-gauge-high"></i>
-                                        <input type="text" id="totalVazao" class="custom-field bg-slate-100 font-black text-orange-700" readonly value="0">
-                                    </div>
+                                    <label>Qtd. Caixas</label>
+                                    <input type="number" id="totalCaixas" class="custom-field" placeholder="0" oninput="calcMedia()">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Média Kg/Caixa</label>
+                                <div class="field-container">
+                                    <i class="fas fa-calculator"></i>
+                                    <input type="text" id="mediaKg" class="custom-field bg-white text-blue-700 font-black" readonly value="0.00">
                                 </div>
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full btn-main mt-4">
-                            <i class="fas fa-save"></i> Gravar Lançamento
+                        <div class="bg-orange-50 p-3 rounded-xl space-y-3">
+                            <p class="text-[9px] font-black text-orange-600 uppercase">Irrigação do Bloco</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="input-group">
+                                    <label>Vazão Emissor</label>
+                                    <select id="tipoIrrigacao" class="custom-field">
+                                        <option value="90">90 L/h</option>
+                                        <option value="520">520 L/h</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Qtd Emissores</label>
+                                    <input type="number" id="qtdEmissores" class="custom-field" placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white btn-action py-4 shadow-lg shadow-emerald-200">
+                            <i class="fas fa-plus-circle"></i> Gravar Lançamento
                         </button>
                     </form>
                 </div>
@@ -343,75 +289,41 @@
             <div class="lg:col-span-8 space-y-6">
                 
                 <!-- Cards de Resumo -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="card p-4 bg-emerald-50 border-emerald-100 flex items-center justify-between">
-                        <div>
-                            <p class="text-[9px] font-black text-emerald-600 uppercase">Total Kg Acumulado</p>
-                            <h2 id="statsKg" class="text-2xl font-black text-emerald-900">0.0</h2>
-                        </div>
-                        <i class="fas fa-scale-balanced text-emerald-200 text-3xl"></i>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="card p-3 bg-emerald-600 text-white border-none">
+                        <p class="text-[8px] font-black opacity-80 uppercase">Total Kg</p>
+                        <h2 id="statsKg" class="text-xl font-black">0.0</h2>
                     </div>
-                    <div class="card p-4 bg-blue-50 border-blue-100 flex items-center justify-between">
-                        <div>
-                            <p class="text-[9px] font-black text-blue-600 uppercase">Total Caixas</p>
-                            <h2 id="statsCaixas" class="text-2xl font-black text-blue-900">0</h2>
-                        </div>
-                        <i class="fas fa-boxes-packing text-blue-200 text-3xl"></i>
+                    <div class="card p-3 bg-blue-600 text-white border-none">
+                        <p class="text-[8px] font-black opacity-80 uppercase">Total Caixas</p>
+                        <h2 id="statsCaixas" class="text-xl font-black">0</h2>
                     </div>
-                    <div class="card p-4 bg-orange-50 border-orange-100 flex items-center justify-between">
-                        <div>
-                            <p class="text-[9px] font-black text-orange-600 uppercase">Consumo Total de Ltrs/h</p>
-                            <h2 id="statsAgua" class="text-2xl font-black text-orange-900">0 L/h</h2>
-                        </div>
-                        <i class="fas fa-droplet text-orange-200 text-3xl"></i>
+                    <div class="card p-3 bg-orange-500 text-white border-none">
+                        <p class="text-[8px] font-black opacity-80 uppercase">Consumo Hídrico</p>
+                        <h2 id="statsAgua" class="text-xl font-black">0 L/h</h2>
+                    </div>
+                    <div class="card p-3 bg-slate-800 text-white border-none">
+                        <p class="text-[8px] font-black opacity-80 uppercase">Peso Médio Geral</p>
+                        <h2 id="statsMediaGeral" class="text-xl font-black">0.00</h2>
                     </div>
                 </div>
 
-                <!-- Painel de Gráficos -->
-                <div class="grid grid-cols-1 gap-6">
-                    <!-- Mortalidade -->
-                    <div class="card p-5">
-                        <h2 class="text-[10px] font-black text-slate-400 uppercase mb-4 flex items-center gap-2">
-                            <i class="fas fa-skull text-red-500"></i> Mortalidade por Bloco
-                        </h2>
-                        <div class="chart-container">
-                            <canvas id="mortalidadeChart"></canvas>
+                <!-- Histórico em Flash Cards -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center px-2">
+                        <h3 class="text-xs font-black text-slate-500 uppercase italic">Linha do Tempo de Produção</h3>
+                        <div class="flex gap-2">
+                            <button onclick="exportar('jpg')" class="bg-white border-2 border-slate-200 text-slate-700 btn-action px-4 py-2 hover:bg-slate-50">
+                                <i class="fab fa-whatsapp text-green-500"></i> JPG
+                            </button>
+                            <button onclick="exportar('pdf')" class="bg-white border-2 border-slate-200 text-slate-700 btn-action px-4 py-2 hover:bg-slate-50">
+                                <i class="fas fa-file-pdf text-red-500"></i> PDF
+                            </button>
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Produção -->
-                        <div class="card p-5">
-                            <h2 class="text-[10px] font-black text-slate-400 uppercase mb-4 flex items-center gap-2">
-                                <i class="fas fa-chart-line text-blue-500"></i> Produção Kg vs Caixas
-                            </h2>
-                            <div class="chart-container">
-                                <canvas id="producaoChart"></canvas>
-                            </div>
-                        </div>
-
-                        <!-- Gráfico de Irrigação -->
-                        <div class="card p-5">
-                            <h2 class="text-[10px] font-black text-slate-400 uppercase mb-4 flex items-center gap-2">
-                                <i class="fas fa-droplet text-orange-500"></i> Consumo Hídrico (L/h)
-                            </h2>
-                            <div class="chart-container">
-                                <canvas id="irrigacaoChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Histórico -->
-                <div class="card overflow-hidden">
-                    <div class="bg-slate-50 p-4 border-b flex justify-between items-center">
-                        <h3 class="text-xs font-black text-slate-500 uppercase">Histórico de Lançamentos</h3>
-                        <button onclick="exportarJPEG()" class="text-[10px] font-black bg-white px-4 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2">
-                            <i class="fas fa-camera"></i> CAPTURAR TELA
-                        </button>
-                    </div>
-                    <div id="listSection" class="divide-y divide-slate-100 max-h-[400px] overflow-y-auto">
-                        <!-- Dinâmico -->
+                    <div id="listSection" class="grid grid-cols-1 gap-3">
+                        <div class="p-10 text-center text-slate-300 text-[10px] font-black uppercase">Aguardando registos...</div>
                     </div>
                 </div>
             </div>
@@ -419,14 +331,13 @@
     </main>
 
     <script>
-        Chart.register(ChartDataLabels);
         let registros = [];
-        let chartMortalidade, chartProducao, chartIrrigacao;
 
-        function calcVazao() {
-            const v = parseInt(document.getElementById('tipoIrrigacao').value);
-            const q = parseInt(document.getElementById('qtdEmissores').value) || 0;
-            document.getElementById('totalVazao').value = (v * q).toLocaleString('pt-PT');
+        function calcMedia() {
+            const kg = parseFloat(document.getElementById('totalKg').value) || 0;
+            const cx = parseInt(document.getElementById('totalCaixas').value) || 0;
+            const media = cx > 0 ? (kg / cx).toFixed(2) : "0.00";
+            document.getElementById('mediaKg').value = media;
         }
 
         function updateUIHeader() {
@@ -448,54 +359,71 @@
             const perd = parseInt(document.getElementById('perdas').value) || 0;
             const emissores = parseInt(document.getElementById('qtdEmissores').value) || 0;
             const vazaoUnit = parseInt(document.getElementById('tipoIrrigacao').value);
+            const kg = parseFloat(document.getElementById('totalKg').value) || 0;
+            const cx = parseInt(document.getElementById('totalCaixas').value) || 0;
 
             const entry = {
                 id: Date.now(),
                 bloco: document.getElementById('bloco').value,
                 cultura: document.getElementById('cultura').value,
-                variedade: document.getElementById('variedade').value,
+                variedade: document.getElementById('variedade').value || 'N/A',
                 transplantado: trans,
                 perdas: perd,
                 causa: document.getElementById('causaPerda').value,
-                kg: parseFloat(document.getElementById('totalKg').value) || 0,
-                caixas: parseInt(document.getElementById('totalCaixas').value) || 0,
+                kg: kg,
+                caixas: cx,
                 vazaoTotal: emissores * vazaoUnit,
-                percentual: trans > 0 ? parseFloat(((perd/trans)*100).toFixed(1)) : 0
+                percentual: trans > 0 ? parseFloat(((perd/trans)*100).toFixed(1)) : 0,
+                media: cx > 0 ? (kg/cx).toFixed(2) : 0
             };
 
             registros.push(entry);
             e.target.reset();
-            calcVazao();
+            calcMedia();
             render();
         });
 
         function render() {
             const list = document.getElementById('listSection');
-            if(registros.length === 0) {
-                list.innerHTML = `<div class="p-10 text-center text-slate-300 text-[10px] font-black uppercase">Sem dados registrados</div>`;
-                return;
-            }
+            if(registros.length === 0) return;
 
             let tk = 0, tc = 0, ta = 0;
             list.innerHTML = "";
+            
             [...registros].reverse().forEach(r => {
                 tk += r.kg; tc += r.caixas; ta += r.vazaoTotal;
+                
+                const cardColor = r.percentual > 10 ? 'card-red' : 'card-green';
+                
                 list.innerHTML += `
-                    <div class="p-4 flex justify-between items-center group hover:bg-slate-50 transition-all">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-slate-800 text-white rounded-lg flex items-center justify-center font-black text-xs">
-                                ${r.bloco.split(' ')[1]}
+                    <div class="flash-card ${cardColor} shadow-sm border border-slate-100">
+                        <div class="flex flex-wrap justify-between items-start gap-4">
+                            <div class="flex gap-4 items-center">
+                                <div class="bg-slate-900 text-white p-3 rounded-2xl text-center min-w-[75px]">
+                                    <p class="text-[7px] uppercase font-bold opacity-60">Setor</p>
+                                    <p class="text-xs font-black uppercase">${r.bloco}</p>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-black text-slate-800">${r.cultura} <span class="text-slate-400 font-medium">(${r.variedade})</span></h4>
+                                    <div class="flex gap-2 mt-2">
+                                        <span class="badge-info"><i class="fas fa-skull text-red-500"></i> ${r.perdas} Mortas</span>
+                                        <span class="badge-info"><i class="fas fa-exclamation-triangle text-orange-500"></i> ${r.causa}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <h4 class="text-[11px] font-black text-slate-800">${r.cultura} <span class="text-slate-400 font-bold">• ${r.variedade}</span></h4>
-                                <p class="text-[9px] font-bold text-slate-500 uppercase">
-                                    Causa: <span class="text-red-500 font-black">${r.causa}</span> • ${r.kg}kg • ${r.vazaoTotal}L/h
-                                </p>
+                            
+                            <div class="flex gap-3 ml-auto">
+                                <div class="text-center bg-blue-50 px-4 py-2 rounded-xl">
+                                    <p class="text-[8px] font-black text-blue-600 uppercase">Colheita</p>
+                                    <p class="text-sm font-black text-blue-900">${r.kg}kg</p>
+                                    <p class="text-[9px] font-bold text-blue-400">${r.caixas} Cx</p>
+                                </div>
+                                <div class="text-center bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
+                                    <p class="text-[8px] font-black text-slate-500 uppercase">Estado</p>
+                                    <p class="text-sm font-black ${r.percentual > 10 ? 'text-red-600' : 'text-emerald-600'}">${r.percentual}%</p>
+                                    <p class="text-[9px] font-bold text-slate-400">${r.media} kg/cx</p>
+                                </div>
                             </div>
-                        </div>
-                        <div class="text-right">
-                             <div class="text-[10px] font-black ${r.percentual > 10 ? 'text-red-500' : 'text-emerald-600'}">${r.percentual}% Perda</div>
-                             <div class="text-[8px] font-bold text-slate-300 uppercase">${r.perdas} Mortas</div>
                         </div>
                     </div>
                 `;
@@ -504,129 +432,520 @@
             document.getElementById('statsKg').innerText = tk.toFixed(1);
             document.getElementById('statsCaixas').innerText = tc;
             document.getElementById('statsAgua').innerText = ta.toLocaleString('pt-PT') + ' L/h';
-            updateCharts();
+            document.getElementById('statsMediaGeral').innerText = tc > 0 ? (tk / tc).toFixed(2) : "0.00";
         }
 
-        function updateCharts() {
-            const sorted = [...registros].sort((a,b) => a.bloco.localeCompare(b.bloco, undefined, {numeric: true}));
-            const labels = sorted.map(r => r.bloco); // Ex: "Bloco 01"
-
-            // 1. Gráfico de Mortalidade (Plantado, Mortas e % Linha)
-            if(chartMortalidade) chartMortalidade.destroy();
-            chartMortalidade = new Chart(document.getElementById('mortalidadeChart'), {
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { 
-                            type: 'line', 
-                            label: '% Perda', 
-                            data: sorted.map(r => r.percentual), 
-                            borderColor: '#ef4444', 
-                            borderWidth: 3, 
-                            tension: 0.4, 
-                            pointRadius: 4, 
-                            pointBackgroundColor: '#ef4444',
-                            yAxisID: 'yPerc',
-                            datalabels: { display: false }
-                        },
-                        { 
-                            type: 'bar', 
-                            label: 'Plantado', 
-                            data: sorted.map(r => r.transplantado), 
-                            backgroundColor: '#10b981', 
-                            borderRadius: 6,
-                            datalabels: { anchor: 'end', align: 'top', color: '#047857', font: { weight: 'bold', size: 10 } }
-                        },
-                        { 
-                            type: 'bar', 
-                            label: 'Mortas', 
-                            data: sorted.map(r => r.perdas), 
-                            backgroundColor: '#f97316', 
-                            borderRadius: 6,
-                            datalabels: { anchor: 'end', align: 'top', color: '#c2410c', font: { weight: 'bold', size: 10 } }
-                        }
-                    ]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } } },
-                    }, 
-                    scales: { 
-                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, title: { display: true, text: 'Qtd (Unidades)', font: { size: 10 } } },
-                        yPerc: { position: 'right', beginAtZero: true, grid: { display: false }, title: { display: true, text: '% Mortalidade', font: { size: 10 } } },
-                        x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
-                    } 
-                }
+        async function exportar(formato) {
+            const element = document.getElementById('capture-area');
+            const noExport = document.querySelectorAll('.no-export');
+            
+            noExport.forEach(el => el.style.display = 'none');
+            
+            const canvas = await html2canvas(element, {
+                scale: 2,
+                backgroundColor: '#f1f5f9',
+                logging: false,
+                useCORS: true
             });
 
-            // 2. Gráfico de Produção
-            if(chartProducao) chartProducao.destroy();
-            chartProducao = new Chart(document.getElementById('producaoChart'), {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Kg', data: sorted.map(r => r.kg), backgroundColor: '#3b82f6', borderRadius: 4 },
-                        { label: 'Caixas', data: sorted.map(r => r.caixas), backgroundColor: '#93c5fd', borderRadius: 4 }
-                    ]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 9 } } },
-                        datalabels: { anchor: 'end', align: 'top', font: { size: 9, weight: 'bold' } } 
-                    },
-                    scales: { x: { ticks: { font: { size: 9, weight: 'bold' } } } }
-                }
-            });
-
-            // 3. Gráfico de Irrigação
-            if(chartIrrigacao) chartIrrigacao.destroy();
-            chartIrrigacao = new Chart(document.getElementById('irrigacaoChart'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{ 
-                        label: 'Vazão L/h', 
-                        data: sorted.map(r => r.vazaoTotal), 
-                        borderColor: '#f59e0b', 
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)', 
-                        fill: true, 
-                        borderWidth: 3, 
-                        tension: 0.4, 
-                        pointRadius: 4,
-                        pointBackgroundColor: '#fff' 
-                    }]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { display: false }, 
-                        datalabels: { anchor: 'end', align: 'top', font: { size: 9, weight: 'bold' }, color: '#b45309' } 
-                    }, 
-                    scales: { 
-                        x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } }, 
-                        y: { display: false } 
-                    } 
-                }
-            });
-        }
-
-        function exportarJPEG() {
-            html2canvas(document.querySelector('main')).then(canvas => {
+            if(formato === 'jpg') {
                 const link = document.createElement('a');
-                link.download = 'Dashboard_Oasis_Completo.jpg';
+                link.download = `Relatorio_Oasis_${new Date().toLocaleDateString()}.jpg`;
                 link.href = canvas.toDataURL('image/jpeg', 0.9);
                 link.click();
-            });
+            } else {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgData = canvas.toDataURL('image/png');
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save(`Relatorio_Oasis_${new Date().toLocaleDateString()}.pdf`);
+            }
+
+            noExport.forEach(el => el.style.display = 'block');
         }
 
         window.onload = () => {
-            document.getElementById('data').value = new Date().toISOString().split('T')[0];
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('data').value = hoje;
+            updateUIHeader();
+        };
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Perdas e Produção - SPG Oásis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+        
+        :root {
+            --primary-dark: #04392b;
+            --primary-light: #065f46;
+            --accent: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--primary-dark);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .header-content {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-img {
+            height: 45px;
+            width: auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 10px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .field-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .field-container i {
+            position: absolute;
+            left: 14px;
+            color: var(--primary-light);
+            font-size: 14px;
+            opacity: 0.6;
+        }
+
+        .custom-field {
+            width: 100%;
+            padding: 10px 10px 10px 40px;
+            border-radius: 12px;
+            border: 2px solid #f1f5f9;
+            background: #f8fafc;
+            font-size: 13px;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+
+        .custom-field:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: white;
+        }
+
+        .btn-action {
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 11px;
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        /* Flash Card Styles */
+        .flash-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            border-left: 6px solid #cbd5e1;
+            transition: transform 0.2s;
+        }
+        .flash-card:hover { transform: scale(1.02); }
+        .card-red { border-left-color: #ef4444; }
+        .card-green { border-left-color: #10b981; }
+
+        .badge-info {
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="sticky-header">
+        <div class="header-content">
+            <div class="flex items-center gap-4">
+                <img src="https://i.imgur.com/LUfXx4e.png" alt="Oasis Logo" class="logo-img">
+                <div class="hidden sm:block">
+                    <h1 class="text-white font-black text-lg leading-tight uppercase">Gestão de Produção</h1>
+                    <p class="text-emerald-400 font-bold text-[10px]">SPG OÁSIS • UNIDADE DE CAMPO</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <div class="bg-white/10 px-3 py-1 rounded-xl text-center">
+                    <p class="text-[8px] text-white/60 font-black uppercase">Data</p>
+                    <p id="displayDate" class="text-white text-xs font-black">--/--/----</p>
+                </div>
+                <div class="bg-white/10 px-3 py-1 rounded-xl text-center">
+                    <p class="text-[8px] text-white/60 font-black uppercase">Semana</p>
+                    <p id="displayWeek" class="text-white text-xs font-black">--</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="capture-area" class="max-w-[1440px] mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Formulário -->
+            <aside class="lg:col-span-4 no-export">
+                <div class="card p-5">
+                    <h3 class="text-xs font-black text-slate-800 uppercase mb-5 flex items-center gap-2">
+                        <i class="fas fa-edit text-emerald-500"></i> Registro de Atividade
+                    </h3>
+                    
+                    <form id="perdaForm" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="input-group">
+                                <label>Data</label>
+                                <div class="field-container">
+                                    <i class="fas fa-calendar"></i>
+                                    <input type="date" id="data" class="custom-field" required onchange="updateUIHeader()">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Bloco</label>
+                                <div class="field-container">
+                                    <i class="fas fa-map-location-dot"></i>
+                                    <select id="bloco" class="custom-field" required>
+                                        <option value="">Selecionar...</option>
+                                        <script>
+                                            for(let i=1; i<=15; i++) {
+                                                let b = `Bloco ${String(i).padStart(2, '0')}`;
+                                                document.write(`<option value="${b}">${b}</option>`);
+                                            }
+                                        </script>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="input-group">
+                                <label>Cultura</label>
+                                <div class="field-container">
+                                    <i class="fas fa-leaf"></i>
+                                    <select id="cultura" class="custom-field" required>
+                                        <option value="Brocólis">Brocólis</option>
+                                        <option value="Couve-flor">Couve-flor</option>
+                                        <option value="Repolho">Repolho</option>
+                                        <option value="Alface">Alface</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Variedade</label>
+                                <div class="field-container">
+                                    <i class="fas fa-fingerprint"></i>
+                                    <input type="text" id="variedade" class="custom-field" placeholder="Ex: Master">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-red-50 p-3 rounded-xl space-y-3">
+                            <p class="text-[9px] font-black text-red-600 uppercase">Perdas e Causas</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="input-group">
+                                    <label>Qtd. Plantada</label>
+                                    <input type="number" id="transplantado" class="custom-field" required placeholder="0">
+                                </div>
+                                <div class="input-group">
+                                    <label>Qtd. Mortas</label>
+                                    <input type="number" id="perdas" class="custom-field" required placeholder="0">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Principal Causa</label>
+                                <select id="causaPerda" class="custom-field" required>
+                                    <option value="">Selecionar causa...</option>
+                                    <option value="Pragas">Pragas</option>
+                                    <option value="Doenças">Doenças</option>
+                                    <option value="Stress Hídrico">Stress Hídrico</option>
+                                    <option value="Qualidade Muda">Qualidade da Muda</option>
+                                    <option value="Dano Mecânico">Dano Mecânico</option>
+                                    <option value="Outros">Outros</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 p-3 rounded-xl space-y-3">
+                            <p class="text-[9px] font-black text-blue-600 uppercase">Produção Realizada</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="input-group">
+                                    <label>Peso Total (KG)</label>
+                                    <input type="number" step="0.1" id="totalKg" class="custom-field" placeholder="0.0" oninput="calcMedia()">
+                                </div>
+                                <div class="input-group">
+                                    <label>Qtd. Caixas</label>
+                                    <input type="number" id="totalCaixas" class="custom-field" placeholder="0" oninput="calcMedia()">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Média Kg/Caixa</label>
+                                <div class="field-container">
+                                    <i class="fas fa-calculator"></i>
+                                    <input type="text" id="mediaKg" class="custom-field bg-white text-blue-700 font-black" readonly value="0.00">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-orange-50 p-3 rounded-xl space-y-3">
+                            <p class="text-[9px] font-black text-orange-600 uppercase">Irrigação do Bloco</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="input-group">
+                                    <label>Vazão Emissor</label>
+                                    <select id="tipoIrrigacao" class="custom-field">
+                                        <option value="90">90 L/h</option>
+                                        <option value="520">520 L/h</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Qtd Emissores</label>
+                                    <input type="number" id="qtdEmissores" class="custom-field" placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white btn-action py-4 shadow-lg shadow-emerald-200">
+                            <i class="fas fa-plus-circle"></i> Gravar Lançamento
+                        </button>
+                    </form>
+                </div>
+            </aside>
+
+            <!-- Dashboard -->
+            <div class="lg:col-span-8 space-y-6">
+                
+                <!-- Cards de Resumo -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="card p-3 bg-emerald-600 text-white border-none">
+                        <p class="text-[8px] font-black opacity-80 uppercase">Total Kg</p>
+                        <h2 id="statsKg" class="text-xl font-black">0.0</h2>
+                    </div>
+                    <div class="card p-3 bg-blue-600 text-white border-none">
+                        <p class="text-[8px] font-black opacity-80 uppercase">Total Caixas</p>
+                        <h2 id="statsCaixas" class="text-xl font-black">0</h2>
+                    </div>
+                    <div class="card p-3 bg-orange-500 text-white border-none">
+                        <p class="text-[8px] font-black opacity-80 uppercase">Consumo Hídrico</p>
+                        <h2 id="statsAgua" class="text-xl font-black">0 L/h</h2>
+                    </div>
+                    <div class="card p-3 bg-slate-800 text-white border-none">
+                        <p class="text-[8px] font-black opacity-80 uppercase">Peso Médio Geral</p>
+                        <h2 id="statsMediaGeral" class="text-xl font-black">0.00</h2>
+                    </div>
+                </div>
+
+                <!-- Histórico em Flash Cards -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center px-2">
+                        <h3 class="text-xs font-black text-slate-500 uppercase italic">Linha do Tempo de Produção</h3>
+                        <div class="flex gap-2">
+                            <button onclick="exportar('jpg')" class="bg-white border-2 border-slate-200 text-slate-700 btn-action px-4 py-2 hover:bg-slate-50">
+                                <i class="fab fa-whatsapp text-green-500"></i> JPG
+                            </button>
+                            <button onclick="exportar('pdf')" class="bg-white border-2 border-slate-200 text-slate-700 btn-action px-4 py-2 hover:bg-slate-50">
+                                <i class="fas fa-file-pdf text-red-500"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="listSection" class="grid grid-cols-1 gap-3">
+                        <div class="p-10 text-center text-slate-300 text-[10px] font-black uppercase">Aguardando registos...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let registros = [];
+
+        function calcMedia() {
+            const kg = parseFloat(document.getElementById('totalKg').value) || 0;
+            const cx = parseInt(document.getElementById('totalCaixas').value) || 0;
+            const media = cx > 0 ? (kg / cx).toFixed(2) : "0.00";
+            document.getElementById('mediaKg').value = media;
+        }
+
+        function updateUIHeader() {
+            const dStr = document.getElementById('data').value;
+            if(!dStr) return;
+            const parts = dStr.split('-');
+            document.getElementById('displayDate').innerText = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            
+            const d = new Date(dStr + 'T00:00:00');
+            const start = new Date(d.getFullYear(), 0, 1);
+            const days = Math.floor((d - start) / (24 * 60 * 60 * 1000));
+            const week = Math.ceil((days + start.getDay() + 1) / 7);
+            document.getElementById('displayWeek').innerText = week;
+        }
+
+        document.getElementById('perdaForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const trans = parseInt(document.getElementById('transplantado').value) || 0;
+            const perd = parseInt(document.getElementById('perdas').value) || 0;
+            const emissores = parseInt(document.getElementById('qtdEmissores').value) || 0;
+            const vazaoUnit = parseInt(document.getElementById('tipoIrrigacao').value);
+            const kg = parseFloat(document.getElementById('totalKg').value) || 0;
+            const cx = parseInt(document.getElementById('totalCaixas').value) || 0;
+
+            const entry = {
+                id: Date.now(),
+                bloco: document.getElementById('bloco').value,
+                cultura: document.getElementById('cultura').value,
+                variedade: document.getElementById('variedade').value || 'N/A',
+                transplantado: trans,
+                perdas: perd,
+                causa: document.getElementById('causaPerda').value,
+                kg: kg,
+                caixas: cx,
+                vazaoTotal: emissores * vazaoUnit,
+                percentual: trans > 0 ? parseFloat(((perd/trans)*100).toFixed(1)) : 0,
+                media: cx > 0 ? (kg/cx).toFixed(2) : 0
+            };
+
+            registros.push(entry);
+            e.target.reset();
+            calcMedia();
+            render();
+        });
+
+        function render() {
+            const list = document.getElementById('listSection');
+            if(registros.length === 0) return;
+
+            let tk = 0, tc = 0, ta = 0;
+            list.innerHTML = "";
+            
+            [...registros].reverse().forEach(r => {
+                tk += r.kg; tc += r.caixas; ta += r.vazaoTotal;
+                
+                const cardColor = r.percentual > 10 ? 'card-red' : 'card-green';
+                
+                list.innerHTML += `
+                    <div class="flash-card ${cardColor} shadow-sm border border-slate-100">
+                        <div class="flex flex-wrap justify-between items-start gap-4">
+                            <div class="flex gap-4 items-center">
+                                <div class="bg-slate-900 text-white p-3 rounded-2xl text-center min-w-[75px]">
+                                    <p class="text-[7px] uppercase font-bold opacity-60">Setor</p>
+                                    <p class="text-xs font-black uppercase">${r.bloco}</p>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-black text-slate-800">${r.cultura} <span class="text-slate-400 font-medium">(${r.variedade})</span></h4>
+                                    <div class="flex gap-2 mt-2">
+                                        <span class="badge-info"><i class="fas fa-skull text-red-500"></i> ${r.perdas} Mortas</span>
+                                        <span class="badge-info"><i class="fas fa-exclamation-triangle text-orange-500"></i> ${r.causa}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-3 ml-auto">
+                                <div class="text-center bg-blue-50 px-4 py-2 rounded-xl">
+                                    <p class="text-[8px] font-black text-blue-600 uppercase">Colheita</p>
+                                    <p class="text-sm font-black text-blue-900">${r.kg}kg</p>
+                                    <p class="text-[9px] font-bold text-blue-400">${r.caixas} Cx</p>
+                                </div>
+                                <div class="text-center bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
+                                    <p class="text-[8px] font-black text-slate-500 uppercase">Estado</p>
+                                    <p class="text-sm font-black ${r.percentual > 10 ? 'text-red-600' : 'text-emerald-600'}">${r.percentual}%</p>
+                                    <p class="text-[9px] font-bold text-slate-400">${r.media} kg/cx</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('statsKg').innerText = tk.toFixed(1);
+            document.getElementById('statsCaixas').innerText = tc;
+            document.getElementById('statsAgua').innerText = ta.toLocaleString('pt-PT') + ' L/h';
+            document.getElementById('statsMediaGeral').innerText = tc > 0 ? (tk / tc).toFixed(2) : "0.00";
+        }
+
+        async function exportar(formato) {
+            const element = document.getElementById('capture-area');
+            const noExport = document.querySelectorAll('.no-export');
+            
+            noExport.forEach(el => el.style.display = 'none');
+            
+            const canvas = await html2canvas(element, {
+                scale: 2,
+                backgroundColor: '#f1f5f9',
+                logging: false,
+                useCORS: true
+            });
+
+            if(formato === 'jpg') {
+                const link = document.createElement('a');
+                link.download = `Relatorio_Oasis_${new Date().toLocaleDateString()}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+            } else {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgData = canvas.toDataURL('image/png');
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save(`Relatorio_Oasis_${new Date().toLocaleDateString()}.pdf`);
+            }
+
+            noExport.forEach(el => el.style.display = 'block');
+        }
+
+        window.onload = () => {
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('data').value = hoje;
             updateUIHeader();
         };
     </script>
